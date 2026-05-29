@@ -44,7 +44,7 @@
   .hero .watermark { position: absolute; left: -180px; bottom: -200px; width: 480px; opacity: 0.55; pointer-events: none; z-index: 0; }
   .hero-grid {
     display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-16);
-    align-items: center; padding: var(--space-24) 0;
+    align-items: center; padding: var(--space-24) var(--space-6);
     position: relative; z-index: 1;
   }
   .hero .eyebrow { color: var(--stillwater-soft); margin-bottom: var(--space-5); }
@@ -131,7 +131,8 @@
   section.night .eyebrow { color: var(--stillwater-soft); }
   section.night h2 { color: var(--parchment); }
   section.night .sec-head p.kicker { color: var(--fg-inv-2); }
-  section.night .watermark { position: absolute; right: -140px; top: -100px; width: 460px; opacity: 0.7; pointer-events: none; }
+  section.night .watermark { position: absolute; right: -140px; top: -100px; width: 460px; opacity: 0.7; pointer-events: none; z-index: 0; }
+  section.night .wrap { position: relative; z-index: 1; }
   .courses { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); position: relative; }
   .course {
     display: flex; flex-direction: column; gap: var(--space-2);
@@ -206,7 +207,7 @@
   }
   @media (max-width: 560px) {
     section.s { padding: var(--space-16) 0; }
-    .hero-grid { padding: var(--space-16) 0; }
+    .hero-grid { padding: var(--space-16) var(--space-6); }
     .hero h1 { font-size: var(--text-4xl); }
     .courses { grid-template-columns: 1fr; }
   }
@@ -428,7 +429,7 @@
           <a href="https://pod.link/digginthedharma" target="_blank" rel="noopener">Diggin' the Dharma podcast</a>
           <a href="https://independent.academia.edu/DouglassSmith" target="_blank" rel="noopener">Academia.edu</a>
           <a href="https://www.patreon.com/dougsseculardharma" target="_blank" rel="noopener">Patreon</a>
-          <a href="/cdn-cgi/l/email-protection#2d4249446d42434144434849454c5f404c03425f4a">Contact</a>
+          <a href="/cdn-cgi/l/email-protection#5b343f321b34353732353e3f333a29363a7534293c">Contact</a>
         </div>
       </div>
       <div class="foot-bottom">
