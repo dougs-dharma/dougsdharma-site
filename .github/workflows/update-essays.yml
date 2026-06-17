@@ -1,0 +1,38 @@
+name: Update Substack essays
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours (UTC)
+  workflow_dispatch: {}      # adds a manual "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write            # allow the job to commit index.html back to the repo
+
+concurrency:
+  group: update-essays
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch latest essays and update index.html
+        run: node scripts/update-essays.mjs
+
+      - name: Commit if changed
+        run: |
+          if [[ -n "$(git status --porcelain index.html)" ]]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add index.html
+            git commit -m "Update latest Substack essays"
+            git push
+          else
+            echo "No changes to commit."
+          fi
