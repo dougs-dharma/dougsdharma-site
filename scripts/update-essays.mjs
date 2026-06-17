@@ -30,7 +30,12 @@ function fmtDate(d) {
   });
 }
 
-const res = await fetch(FEED, { headers: { 'user-agent': 'dougsdharma-site-bot' } });
+const res = await fetch(FEED, {
+  headers: {
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+    'accept': 'application/rss+xml, application/xml;q=0.9, */*;q=0.8',
+  },
+});
 if (!res.ok) {
   console.error('Feed fetch failed:', res.status, res.statusText);
   process.exit(1);
