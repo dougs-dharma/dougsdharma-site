@@ -35,15 +35,30 @@ function fmtDate(d) {
   });
 }
 
-const res = await fetch(API, { headers: { accept: 'application/json' } });
-if (!res.ok) {
-  console.error('Feed fetch failed:', res.status, res.statusText);
-  process.exit(1);
+// The rss2json service occasionally returns a transient 5xx. Retry a few
+// times with a short backoff so a momentary blip doesn't fail the whole run.
+async function fetchFeed(attempts = 4) {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      const res = await fetch(API, { headers: { accept: 'application/json' } });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.status === 'ok' && Array.isArray(json.items)) return json;
+        console.error(`Attempt ${i}/${attempts}: rss2json status=${json.status} ${json.message || ''}`);
+      } else {
+        console.error(`Attempt ${i}/${attempts}: HTTP ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      console.error(`Attempt ${i}/${attempts}: ${err.message}`);
+    }
+    if (i < attempts) await new Promise((r) => setTimeout(r, i * 3000)); // 3s, 6s, 9s
+  }
+  return null;
 }
 
-const data = await res.json();
-if (data.status !== 'ok' || !Array.isArray(data.items)) {
-  console.error('rss2json returned an error:', data.status, data.message || '');
+const data = await fetchFeed();
+if (!data) {
+  console.error('Feed fetch failed after retries; leaving index.html unchanged.');
   process.exit(1);
 }
 
