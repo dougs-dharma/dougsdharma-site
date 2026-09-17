@@ -1,4 +1,4 @@
-name: Update Substack essays
+name: Update site content
 
 on:
   schedule:
@@ -22,16 +22,26 @@ jobs:
         with:
           node-version: '20'
 
+      # Runs first, and never blocks the essays step: a stale count matters
+      # far less than a stale essay list.
+      - name: Refresh video index counts in index.html
+        run: node scripts/update-stats.mjs
+        continue-on-error: true
+
       - name: Fetch latest essays and update index.html
         run: node scripts/update-essays.mjs
 
+      # always(): if the essays feed fails (which exits 1 and fails the job, so
+      # the failure stays visible in the Actions tab), any stats change from the
+      # step above should still be committed rather than silently discarded.
       - name: Commit if changed
+        if: always()
         run: |
           if [[ -n "$(git status --porcelain index.html)" ]]; then
             git config user.name  "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add index.html
-            git commit -m "Update latest Substack essays"
+            git commit -m "Update site content (essays / video index counts)"
             git push
           else
             echo "No changes to commit."
