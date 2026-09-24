@@ -1,0 +1,27 @@
+# Doug Smith (Doug's Dharma)
+
+> Douglass Smith, PhD, is an independent scholar of early Buddhism with a PhD in Philosophy of Mind. Since 2017 he has taught early Buddhism, from a secular practice orientation, through the Doug's Dharma YouTube channel, and through longer courses at the Online Dharma Institute, essays on Substack, a book, and peer-reviewed articles in Buddhist Studies.
+
+This is the personal site of Douglass Smith (dougsdharma.com). He has many years of practice in the Zen and Theravāda traditions, and completed the yearlong Integrated Study and Practice Program with the Barre Center for Buddhist Studies and the New York Insight Meditation Center in 2013. The links below are the best entry points to his work.
+
+## Videos
+
+- [Complete Video Index](https://videos.dougsdharma.com/): every video on the channel, searchable by topic and sutta reference
+- [Video index for AI agents](https://videos.dougsdharma.com/llms.txt): the full list of videos with watch URLs, plus the topic vocabulary and sutta references
+- [Video data (JSON)](https://videos.dougsdharma.com/videos.json): machine-readable index with each video's title, date, summary, topics and suttas cited
+- [Doug's Dharma on YouTube](https://www.youtube.com/c/dougsdharma): the channel itself
+
+## Courses
+
+- [Online Dharma Institute](https://onlinedharma.org): self-paced courses that work carefully through the early texts and the path of practice, including a free introductory short course, Wisdom, Kindness and Calm
+
+## Writing
+
+- [Essays on Substack](https://dougsmith773158.substack.com): longer reflections on philosophy, artificial intelligence, cognitive science and early Buddhism
+- [A Handbook of Early Buddhist Wisdom: The Path of the Mahāmaṅgala Sutta](https://amzn.to/3PrKKio): his book, a guide to the Buddha's teaching on a life of good fortune, with a foreword by Ven. Bhikkhu Bodhi
+- [Journal articles on Academia.edu](https://independent.academia.edu/DouglassSmith): peer-reviewed scholarly articles in Buddhist Studies
+
+## Optional
+
+- [Diggin' the Dharma podcast](https://pod.link/digginthedharma): a podcast he co-hosted for several years with meditation teacher Jon Aaron
+- [Patreon](https://www.patreon.com/dougsseculardharma): supporter membership, with ad-free and audio-only versions of the videos, show notes and occasional livestreams
