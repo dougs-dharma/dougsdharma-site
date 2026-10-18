@@ -10,7 +10,7 @@
 
 import { readFile, writeFile } from 'node:fs/promises';
 
-const FEED   = 'https://dougsmith773158.substack.com/feed';
+const FEED   = 'https://dougsmithphd.substack.com/feed';
 const COUNT  = 3;
 const FILE   = 'index.html';
 const INDENT = '          '; // 10 spaces — matches the indentation in index.html
