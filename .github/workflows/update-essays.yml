@@ -31,9 +31,11 @@ jobs:
       - name: Fetch latest essays and update index.html
         run: node scripts/update-essays.mjs
 
-      # always(): if the essays feed fails (which exits 1 and fails the job, so
-      # the failure stays visible in the Actions tab), any stats change from the
-      # step above should still be committed rather than silently discarded.
+      # always(): if the essays step fails, any stats change from the step above
+      # should still be committed rather than silently discarded. (An essay
+      # feed outage alone no longer fails the step; it logs a warning
+      # annotation instead. The step still fails if index.html's markers are
+      # missing.)
       - name: Commit if changed
         if: always()
         run: |

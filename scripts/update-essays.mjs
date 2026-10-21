@@ -172,9 +172,14 @@ async function main() {
     }
   }
   if (!items) {
-    annotate('error', 'All essay sources failed', 'index.html left unchanged; see the per-source warnings.');
+    // Deliberately not a job failure (Doug's choice, 2026-10-21): a failed
+    // run emails him every six hours, and an essay list that's a little stale
+    // costs little because he posts rarely. The warning annotation still
+    // records the outage. Exit codes 1 below (missing markers) remain
+    // failures, since those mean the page itself is broken.
+    annotate('warning', 'All essay sources failed', 'index.html left unchanged; see the per-source warnings.');
     console.error('All essay sources failed; leaving index.html unchanged.');
-    process.exit(1);
+    return;
   }
   items = items.slice(0, COUNT);
 
