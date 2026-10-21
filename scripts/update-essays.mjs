@@ -2,13 +2,18 @@
 // <!-- ESSAYS:START --> and <!-- ESSAYS:END --> in index.html.
 //
 // Tries several sources in order and uses the first that returns posts:
-//   1. Substack's own JSON API  (/api/v1/posts)
-//   2. The RSS feed directly    (/feed)
-//   3. rss2json, a third-party relay that reads the feed for us
-// History: the direct feed has at times returned 403 to GitHub Actions runner
-// IPs, so the script used to rely on rss2json alone. In Oct 2026 rss2json
-// itself started serving a Cloudflare challenge page to every request, which
-// failed every run. No single source has proved reliable, hence the chain.
+//   1. feed2json   — relay that reads the feed and returns JSON Feed
+//   2. Substack's own JSON API, directly  (/api/v1/posts)
+//   3. The RSS feed, directly             (/feed)
+//   4. allorigins  — relay that passes the feed through unchanged
+//   5. rss2json    — relay; the original source
+// Why relays come first: Substack answers GitHub Actions runner IPs with
+// HTTP 403 for both the API and the feed (confirmed Oct 2026), so a direct
+// fetch only works from elsewhere. The direct sources stay in the chain in
+// case that block is ever lifted. History: the script used rss2json alone
+// until Oct 2026, when rss2json began serving a Cloudflare challenge page to
+// every request and every run failed. allorigins is flaky (frequent 5xx), so
+// it is a backup only. No single source has proved reliable, hence the chain.
 //
 // Runs on a GitHub Actions runner (Node 20+, global fetch). No dependencies.
 // To change the Substack or how many essays show, edit SUBSTACK / COUNT below.
@@ -73,6 +78,16 @@ export function parseRss(xml) {
   }));
 }
 
+// JSON Feed 1.x (https://jsonfeed.org), as returned by feed2json.
+export function parseJsonFeed(json) {
+  if (!json || !Array.isArray(json.items)) throw new Error('not a JSON Feed (no items array)');
+  return json.items.map((it) => ({
+    title: (it.title || '').trim(),
+    link:  (it.url || it.external_url || '').trim(),
+    date:  fmtDate(it.date_published),
+  }));
+}
+
 export function parseRss2json(json) {
   if (json.status !== 'ok' || !Array.isArray(json.items)) {
     throw new Error(`rss2json status=${json.status} ${json.message || ''}`);
@@ -86,11 +101,15 @@ export function parseRss2json(json) {
 
 // ---- Fetching ----
 
+const FEED = `${SUBSTACK}/feed`;
 const SOURCES = [
+  { name: 'feed2json',    url: 'https://feed2json.org/convert?url=' + encodeURIComponent(FEED),
+    kind: 'json', parse: parseJsonFeed },
   { name: 'Substack API', url: `${SUBSTACK}/api/v1/posts?limit=${COUNT}`, kind: 'json', parse: parseSubstackApi },
-  { name: 'RSS feed',     url: `${SUBSTACK}/feed`,                        kind: 'text', parse: parseRss },
-  { name: 'rss2json',
-    url: 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(`${SUBSTACK}/feed`),
+  { name: 'RSS feed',     url: FEED,                                      kind: 'text', parse: parseRss },
+  { name: 'allorigins',   url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(FEED),
+    kind: 'text', parse: parseRss },
+  { name: 'rss2json',     url: 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(FEED),
     kind: 'json', parse: parseRss2json },
 ];
 
@@ -112,7 +131,12 @@ async function trySource(src, attempts = 2) {
         headers: { 'user-agent': UA, accept: src.kind === 'json' ? 'application/json' : 'application/rss+xml, text/xml' },
         signal: AbortSignal.timeout(20000),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      if (!res.ok) {
+        const e = new Error(`HTTP ${res.status} ${res.statusText}`);
+        // A 4xx is a refusal (blocked, not found) and won't change on retry.
+        if (res.status >= 400 && res.status < 500) e.noRetry = true;
+        throw e;
+      }
       const body = await res.text();
       let data;
       if (src.kind === 'json') {
@@ -128,6 +152,7 @@ async function trySource(src, attempts = 2) {
       // Node's fetch hides the real network error in err.cause.
       lastErr = err.message + (err.cause ? ` (${err.cause.code || err.cause.message || err.cause})` : '');
       console.error(`  ${src.name}, attempt ${i}/${attempts}: ${lastErr}`);
+      if (err.noRetry) break;
       if (i < attempts) await new Promise((r) => setTimeout(r, 3000));
     }
   }
