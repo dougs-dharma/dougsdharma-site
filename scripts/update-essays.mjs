@@ -94,7 +94,18 @@ const SOURCES = [
     kind: 'json', parse: parseRss2json },
 ];
 
+// GitHub Actions annotation. Unlike the job log, annotations are readable
+// without signing in (via the check-runs API), so a failure explains itself.
+// Commas, colons and newlines must be escaped in the title/message.
+function annotate(level, title, msg) {
+  if (!process.env.GITHUB_ACTIONS) return;
+  const e = (s) => String(s).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+  const t = e(title).replace(/:/g, '%3A').replace(/,/g, '%2C');
+  console.log(`::${level} title=${t}::${e(msg)}`);
+}
+
 async function trySource(src, attempts = 2) {
+  let lastErr = '';
   for (let i = 1; i <= attempts; i++) {
     try {
       const res = await fetch(src.url, {
@@ -114,10 +125,13 @@ async function trySource(src, attempts = 2) {
       if (!items.length) throw new Error('no usable items');
       return items;
     } catch (err) {
-      console.error(`  ${src.name}, attempt ${i}/${attempts}: ${err.message}`);
+      // Node's fetch hides the real network error in err.cause.
+      lastErr = err.message + (err.cause ? ` (${err.cause.code || err.cause.message || err.cause})` : '');
+      console.error(`  ${src.name}, attempt ${i}/${attempts}: ${lastErr}`);
       if (i < attempts) await new Promise((r) => setTimeout(r, 3000));
     }
   }
+  annotate('warning', `Essay source failed: ${src.name}`, `${src.url} -> ${lastErr}`);
   return null;
 }
 
@@ -126,9 +140,14 @@ async function main() {
   for (const src of SOURCES) {
     console.log(`Trying ${src.name}…`);
     items = await trySource(src);
-    if (items) { console.log(`  OK via ${src.name}.`); break; }
+    if (items) {
+      console.log(`  OK via ${src.name}.`);
+      annotate('notice', 'Essays fetched', `via ${src.name}`);
+      break;
+    }
   }
   if (!items) {
+    annotate('error', 'All essay sources failed', 'index.html left unchanged; see the per-source warnings.');
     console.error('All essay sources failed; leaving index.html unchanged.');
     process.exit(1);
   }
